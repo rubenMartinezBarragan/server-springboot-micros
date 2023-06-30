@@ -1,8 +1,5 @@
 package com.ccsw.tutorialloan.game.model;
 
-import com.ccsw.tutorialloan.author.model.AuthorDto;
-import com.ccsw.tutorialloan.category.model.CategoryDto;
-
 /**
  * @author ccsw
  *
@@ -12,8 +9,6 @@ public class GameDto {
 	private Long id;
 	private String title;
 	private String age;
-	private CategoryDto category;
-	private AuthorDto author;
 
 	/**
 	 * @return id
@@ -62,33 +57,4 @@ public class GameDto {
 
 		this.age = age;
 	}
-
-	/**
-	 * @return the category
-	 */
-	public CategoryDto getCategory() {
-		return category;
-	}
-
-	/**
-	 * @param category the category to set
-	 */
-	public void setCategory(CategoryDto category) {
-		this.category = category;
-	}
-
-	/**
-	 * @return the author
-	 */
-	public AuthorDto getAuthor() {
-		return author;
-	}
-
-	/**
-	 * @param author the author to set
-	 */
-	public void setAuthor(AuthorDto author) {
-		this.author = author;
-	}
-
 }

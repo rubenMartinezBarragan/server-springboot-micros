@@ -52,16 +52,22 @@ public class LoanController {
 	/**
 	 * Método para recuperar un listado paginado de {@link Loan}
 	 *
-	 * @param dto dto de búsqueda
+	 * @param dto        dto de búsqueda
+	 * @param idGame     PK título del juego
+	 * @param idClient   PK del cliente
+	 * @param dateSearch fecha
 	 * @return {@link Page} de {@link LoanDto}
 	 */
-	@Operation(summary = "Find Page", description = "Method that return a page of Loans")
+	@Operation(summary = "Find Page", description = "Method that return a filtered a page of Loans")
 	@RequestMapping(path = "", method = RequestMethod.POST)
-	public Page<LoanDto> findPage(@RequestBody LoanSearchDto dto) {
+	public Page<LoanDto> findPage(@RequestBody LoanSearchDto dto,
+			@RequestParam(value = "idGame", required = false) Long idGame,
+			@RequestParam(value = "idClient", required = false) Long idClient,
+			@RequestParam(value = "dateSearch", required = false) Date dateSearch) {
 		List<ClientDto> clients = clientClient.findAll();
 		List<GameDto> games = gameClient.find();
 
-		Page<Loan> page = this.loanService.findPage(dto);
+		Page<Loan> page = this.loanService.findPage(dto, idGame, idClient, dateSearch);
 
 		return new PageImpl<>(page.getContent().stream().map(loan -> {
 			LoanDto loanDto = new LoanDto();
@@ -76,37 +82,6 @@ public class LoanController {
 
 			return loanDto;
 		}).collect(Collectors.toList()), page.getPageable(), page.getTotalElements());
-	}
-
-	/**
-	 * Método para recuperar una lista de {@link Loan}
-	 *
-	 * @param idGame     PK título del juego
-	 * @param idClient   PK del cliente
-	 * @param dateSearch fecha
-	 * @return {@link List} de {@link LoanDto}
-	 */
-	@Operation(summary = "Find", description = "Method that return a filtered list of Loan")
-	@RequestMapping(path = "", method = RequestMethod.GET)
-	public List<LoanDto> find(@RequestParam(value = "idGame", required = false) Long idGame,
-			@RequestParam(value = "idClient", required = false) Long idClient,
-			@RequestParam(value = "dateSearch", required = false) Date dateSearch) {
-		List<ClientDto> clients = clientClient.findAll();
-		List<GameDto> games = gameClient.find();
-
-		return loanService.find(idGame, idClient, dateSearch).stream().map(loan -> {
-			LoanDto loanDto = new LoanDto();
-
-			loanDto.setId(loan.getId());
-			loanDto.setGame(
-					games.stream().filter(game -> game.getId().equals(loan.getIdGame())).findFirst().orElse(null));
-			loanDto.setClient(clients.stream().filter(client -> client.getId().equals(loan.getIdClient())).findFirst()
-					.orElse(null));
-			loanDto.setDateLoan(loan.getDateLoan());
-			loanDto.setDateReturn(loan.getDateReturn());
-
-			return loanDto;
-		}).collect(Collectors.toList());
 	}
 
 	/**

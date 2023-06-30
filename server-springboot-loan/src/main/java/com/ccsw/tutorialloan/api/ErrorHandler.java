@@ -9,16 +9,16 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.ccsw.tutorialloan.exception.ApplicationError;
-import com.ccsw.tutorialloan.exception.DosClientesDistintosException;
-import com.ccsw.tutorialloan.exception.FinAnteriorInicioException;
-import com.ccsw.tutorialloan.exception.PeriodoPrestamoMaximoException;
-import com.ccsw.tutorialloan.exception.PrestadosDosJuegosException;
+import com.ccsw.tutorialloan.exception.TwoDifferentClientsException;
+import com.ccsw.tutorialloan.exception.PreviousEndStartException;
+import com.ccsw.tutorialloan.exception.MaximumLoanPeriodException;
+import com.ccsw.tutorialloan.exception.LoanTwoGamesException;
 
 @ControllerAdvice
 @RestController
 public class ErrorHandler extends ResponseEntityExceptionHandler {
-	@ExceptionHandler(FinAnteriorInicioException.class)
-	public ResponseEntity<ApplicationError> handlerCustomerUnauthorizedException(FinAnteriorInicioException exception,
+	@ExceptionHandler(PreviousEndStartException.class)
+	public ResponseEntity<ApplicationError> handlerCustomerUnauthorizedException(PreviousEndStartException exception,
 			WebRequest webRequest) {
 		ApplicationError error = new ApplicationError();
 		error.setCode(401);
@@ -27,8 +27,8 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
 		return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
 	}
 
-	@ExceptionHandler(PeriodoPrestamoMaximoException.class)
-	public ResponseEntity<ApplicationError> handlerCustomerForbiddenException(PeriodoPrestamoMaximoException exception,
+	@ExceptionHandler(MaximumLoanPeriodException.class)
+	public ResponseEntity<ApplicationError> handlerCustomerForbiddenException(MaximumLoanPeriodException exception,
 			WebRequest webRequest) {
 		ApplicationError error = new ApplicationError();
 		error.setCode(403);
@@ -37,8 +37,8 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
 		return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
 	}
 
-	@ExceptionHandler(DosClientesDistintosException.class)
-	public ResponseEntity<ApplicationError> handlerCustomerNotFoundException(DosClientesDistintosException exception,
+	@ExceptionHandler(TwoDifferentClientsException.class)
+	public ResponseEntity<ApplicationError> handlerCustomerNotFoundException(TwoDifferentClientsException exception,
 			WebRequest webRequest) {
 		ApplicationError error = new ApplicationError();
 		error.setCode(404);
@@ -47,8 +47,8 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
 		return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
 	}
 
-	@ExceptionHandler(PrestadosDosJuegosException.class)
-	public ResponseEntity<ApplicationError> handlerCustomerConflictException(PrestadosDosJuegosException exception,
+	@ExceptionHandler(LoanTwoGamesException.class)
+	public ResponseEntity<ApplicationError> handlerCustomerConflictException(LoanTwoGamesException exception,
 			WebRequest webRequest) {
 		ApplicationError error = new ApplicationError();
 		error.setCode(409);
