@@ -1,8 +1,6 @@
 package com.ccsw.tutorialloan.loan;
 
 import java.sql.Date;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import org.springframework.beans.BeanUtils;
@@ -74,35 +72,31 @@ public class LoanServiceImpl implements LoanService {
 		loan.setIdGame(dto.getGame().getId());
 		loan.setIdClient(dto.getClient().getId());
 
-		// Inicio validacion: 'La fecha de fin NO puede ser anterior a la fecha de
-		// inicio'
+		LoanSpecification gameSpec = new LoanSpecification(new SearchCriteria("idGame", ":", dto.getGame().getId()));
+		LoanSpecification clientSpec = new LoanSpecification(
+				new SearchCriteria("idClient", ":", dto.getClient().getId()));
+		LoanSpecification dateLoanSpec = new LoanSpecification(
+				new SearchCriteria("dateLoan", "<:", dto.getDateReturn()));
+		LoanSpecification dateReturnSpec = new LoanSpecification(
+				new SearchCriteria("dateReturn", ">:", dto.getDateLoan()));
+
+//		Inicio validacion: 'La fecha de fin NO puede ser anterior a la fecha de inicio'
 		if (dto.getDateReturn().before(dto.getDateLoan()))
 			throw new PreviousEndStartException("La fecha de fin NO puede ser anterior a la fecha de inicio");
 
-		// Inicio validacion: 'El periodo de prestamo maximo solo puede ser de 14 dias'
+//		Inicio validacion: 'El periodo de prestamo maximo solo puede ser de 14 dias'
 		long daysBetween = ChronoUnit.DAYS.between(dto.getDateLoan().toLocalDate(), dto.getDateReturn().toLocalDate());
 
 		if (daysBetween > 14L)
 			throw new MaximumLoanPeriodException("El periodo de préstamo máximo solo puede ser de 14 días");
 
-		// Inicio validacion: 'El mismo juego no puede estar prestado a dos clientes
-		// distintos en un mismo dia'
+//		Inicio validacion: 'El mismo juego no puede estar prestado a dos clientes distintos en un mismo dia'
 		gameLoan = true;
 
-		LoanSpecification gameSpec = new LoanSpecification(new SearchCriteria("idGame", ":", dto.getGame().getId()));
-
-		Specification<Loan> specGame = Specification.where(gameSpec);
+		Specification<Loan> specGame = Specification.where(gameSpec).and(dateLoanSpec).and(dateReturnSpec);
 
 		loanRepository.findAll(specGame).forEach((p) -> {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-			LocalDate dateLoan = LocalDate.parse(p.getDateLoan().toString(), formatter);
-			LocalDate dateReturn = LocalDate.parse(p.getDateReturn().toString(), formatter);
-			LocalDate dateInsertLoan = LocalDate.parse(dto.getDateLoan().toString(), formatter);
-			LocalDate dateInsertRetun = LocalDate.parse(dto.getDateReturn().toString(), formatter);
-
-			if ((!p.getIdClient().equals(dto.getClient().getId()))
-					&& (dateInsertLoan.isBefore(dateReturn) && dateInsertRetun.isAfter(dateLoan)))
+			if (!p.getIdClient().equals(dto.getClient().getId()))
 				gameLoan = false;
 		});
 
@@ -110,19 +104,14 @@ public class LoanServiceImpl implements LoanService {
 			throw new TwoDifferentClientsException(
 					"El mismo juego no puede estar prestado a dos clientes distintos en un mismo día");
 
-		// Inicio validacion: 'Un mismo cliente no puede tener prestados mas de 2 juegos
-		// en un mismo dia'
+//		Inicio validacion: 'Un mismo cliente no puede tener prestados mas de 2 juegos en un mismo dia'
 		gameLoan = true;
 		numberGame = 0;
 
-		LoanSpecification clientSpec = new LoanSpecification(
-				new SearchCriteria("idClient", ":", dto.getClient().getId()));
-
-		Specification<Loan> specClient = Specification.where(clientSpec);
+		Specification<Loan> specClient = Specification.where(clientSpec).and(dateLoanSpec).and(dateReturnSpec);
 
 		loanRepository.findAll(specClient).forEach((p) -> {
-			if (dto.getDateLoan().before(p.getDateLoan()) && dto.getDateReturn().after(p.getDateLoan()))
-				numberGame++;
+			numberGame++;
 
 			if (numberGame >= 2)
 				gameLoan = false;
@@ -132,7 +121,7 @@ public class LoanServiceImpl implements LoanService {
 			throw new LoanTwoGamesException(
 					"Un mismo cliente no puede tener prestados más de 2 juegos en un mismo día");
 
-		// Guardar prestamo
+//		Guardar prestamo
 		this.loanRepository.save(loan);
 	}
 }
